@@ -6,6 +6,9 @@
 
 
 LE-ATTENTION allows you to build (causal) attention matrix like LEGO blocks.
+In particular, we assume that the context can be splited into chunks of text.
+Each chunk is a *node* (named as an `ICLNode`), and text chunks that contributes values (i.e. text that this node can see) are the parents of this node.
+As such, under the causal LLM setting, all nodes can form a DAG.
 
 ## Dependencies
 
