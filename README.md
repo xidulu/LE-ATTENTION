@@ -67,7 +67,8 @@ Then if you call
 visualize_attention_matrix(attention_mask, start_end_pos, names, size_ratio=0.5,
                           save_dir='./figures/mask.png')
 ```
-you get a visualization of the mask, where gray areas denote masked areas.
+you get a visualization of the mask, where gray areas denote masked areas,
+x-axis denotes the keys and y-axis denotes the queries.
 ![](./figures/mask.png)
 
 Lastly, you can call
