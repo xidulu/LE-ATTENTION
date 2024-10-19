@@ -35,7 +35,7 @@ X2 = ICLNode('example2.', parents=[X1], id='X2')
 X3 = ICLNode('example3.', parents=[X2], id='X3')
 Q = ICLNode('What does the fox say?', parents=[X3], id='Q')
 
-print(viz_dag(Q, output_character_limit=100))
+print(print_dag(Q, output_character_limit=100))
 >>> 
 └── Q
     └── X3
