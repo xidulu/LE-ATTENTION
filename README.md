@@ -72,13 +72,21 @@ you get a visualization of the mask, where gray areas denote masked areas,
 x-axis denotes the keys and y-axis denotes the queries.
 ![](./figures/mask.png)
 
-Lastly, you can call
+Lastly, you can acquire the `input_ids` of all nodes under top-to-bottom topological order via
 ```python
 input_ids, _ = prepare_inputs(nodes)
 print(input_ids)
 >>>
 tensor([[ 8858,    16,    13,  8858,    17,    13,  8858,    18,    13,  3923,
           1587,   279, 39935,  2019,    30]])
+
+for node in [X1, X2, X3, Q]:
+    print(node.tokenize(tokenizer))
+tensor([8858,   16,   13])
+tensor([8858,   17,   13])
+tensor([8858,   18,   13])
+tensor([ 3923,  1587,   279, 39935,  2019,    30])
+>>>
 ```
 which, combined with the attention mask, can be fed into transformer's `generate` and `forward` function.
 
