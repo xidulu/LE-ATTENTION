@@ -99,3 +99,7 @@ See `demo.ipynb` for more interesting attention matricies !!!!
 1. "Begin of sentence" token is removed from the `token_ids` by default, you should manually add a node that represents the begin of sentence.
 
 2. The resulting attention mask, even potentially with lots of blank holes, would NOT give you any performance gain since a NxN attention matrix would still be realized during forward propagation. However, potentially some mask can be impelemented via FlexAttention, and then performance gain can be achieved.
+
+## Work in progress
+
+- Combination with flex attention (partially implemented in `flex_attention_experiment.ipynb`)
