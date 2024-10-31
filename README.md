@@ -94,12 +94,12 @@ Notice that if you can also manually specify a text chunk's position id by setti
 
 See `demo.ipynb` for more interesting attention matricies !!!!
 
+## Acceleration with flex attention
+
+Notice that, through the DAG language, we create a highly structured and sparse attention matrix, however default SDAP attention would NOT take into account the sparsity.
+Fortunately, we have PyTorch's latest functionality `flex_attention`, which can be combined with LE-ATTENTION to actually make use of the structured attention and make THINGS faster,
+see `flex_attention_experiments.ipynb` for examples.
+
 ## Important notes
 
 1. "Begin of sentence" token is removed from the `token_ids` by default, you should manually add a node that represents the begin of sentence.
-
-2. The resulting attention mask, even potentially with lots of blank holes, would NOT give you any performance gain since a NxN attention matrix would still be realized during forward propagation. However, potentially some mask can be impelemented via FlexAttention, and then performance gain can be achieved.
-
-## Work in progress
-
-- Combination with flex attention (partially implemented in `flex_attention_experiment.ipynb`)
