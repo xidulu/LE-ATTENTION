@@ -67,7 +67,7 @@ class ICLNode:
     def __str__(self):
         return f'{self.id}'
 
-def build_attention_matrix(leaf_node, tokenizer=None):
+def build_attention_matrix(leaf_node, tokenizer=None, materialize_attention_matrix=True):
     """
     Tokenize and build the attention matrix for the DAG rooted at the leaf node
     """
@@ -80,12 +80,13 @@ def build_attention_matrix(leaf_node, tokenizer=None):
     N = np.sum(seq_lens) # Total number of context tokens
     start_end_pos = list(zip(np.cumsum([0] + seq_lens[:-1]), np.cumsum(seq_lens)))
     names = [str(node) for node in all_nodes]
+    if not materialize_attention_matrix:
+        return None, all_nodes, start_end_pos, names
     attention_matrix = np.zeros((N, N))
     # Fill in each diagonal with a lower triangular attention matrix
     for i, node in enumerate(all_nodes):
         start, end = start_end_pos[i]
         attention_matrix[start:end, start:end] = np.triu(np.ones((end - start, end - start))).T
-
     # Connect the nodes in the atteinion matrix
     for node in all_nodes:
         for parent in node.parents:
@@ -164,3 +165,44 @@ def print_dag(leaf_node, output_character_limit=10):
 
     tree_lines = build_tree(leaf_node)
     return "\n".join(tree_lines)
+
+# Utils for flex attention support
+
+def build_adjacency_matrix(nodes):
+    node_to_index = {node.id: idx for idx, node in enumerate(nodes)}
+    n = len(nodes)
+    
+    # Initialize adjacency matrix with zeros
+    adj_matrix = [[0] * n for _ in range(n)]
+    for i in range(n):
+        adj_matrix[i][i] = 1
+    # Fill the adjacency matrix
+    for node in nodes:
+        current_idx = node_to_index[node.id]
+        for parent in node.parents:
+            parent_idx = node_to_index[parent.id]
+            # Mark edge from parent to current node
+            adj_matrix[current_idx][parent_idx] = 1
+    
+    return adj_matrix
+
+
+def _offsets_to_doc_ids_tensor(offsets):
+    device = offsets.device
+    counts = offsets[1:] - offsets[:-1]
+    return torch.repeat_interleave(
+        torch.arange(len(counts), device=device, dtype=torch.int32), counts
+    )
+
+
+def generate_flex_attention_mask_mod(leaf_node, tokenizer):
+    _, all_nodes, start_end_pos, names = build_attention_matrix(leaf_node, tokenizer)
+    node_id = _offsets_to_doc_ids_tensor(torch.tensor([0] + [end for (start, end) in start_end_pos]))
+    adjancey_matrix = torch.tensor(build_adjacency_matrix(all_nodes), dtype=torch.bool)
+
+    def document_causal_mask(b, h, q_idx, kv_idx):
+        causal_mask = q_idx >= kv_idx
+        node_mask = adjancey_matrix[node_id[q_idx], node_id[kv_idx]]
+        return causal_mask & node_mask
+
+    return document_causal_mask
